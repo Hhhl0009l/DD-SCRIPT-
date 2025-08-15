@@ -1,544 +1,115 @@
+local lp = game:FindService("Players").LocalPlayer
 
+local function gplr(String)
+	local Found = {}
+	local strl = String:lower()
+	if strl == "all" then
+		for i,v in pairs(game:FindService("Players"):GetPlayers()) do
+			table.insert(Found,v)
+		end
+	elseif strl == "others" then
+		for i,v in pairs(game:FindService("Players"):GetPlayers()) do
+			if v.Name ~= lp.Name then
+				table.insert(Found,v)
+			end
+		end 
+	elseif strl == "me" then
+		for i,v in pairs(game:FindService("Players"):GetPlayers()) do
+			if v.Name == lp.Name then
+				table.insert(Found,v)
+			end
+		end 
+	else
+		for i,v in pairs(game:FindService("Players"):GetPlayers()) do
+			if v.Name:lower():sub(1, #String) == String:lower() then
+				table.insert(Found,v)
+			end
+		end 
+	end
+	return Found 
+end
 
--- Load Rayfield UI Library
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+--// sds
 
--- Create Window
-local Window = Rayfield:CreateWindow({
-   Name = "Game Hub",
-   LoadingTitle = "Loading Game Scripts...",
-   LoadingSubtitle = "by YourName",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "GameHub",
-      FileName = "config"
-   },
-   Discord = {
-      Enabled = false,
-      Invite = "noinvitelink",
-      RememberJoins = true
-   },
-   KeySystem = false
-})
+local h = Instance.new("ScreenGui")
+local Main = Instance.new("ImageLabel")
+local Top = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local TextBox = Instance.new("TextBox")
+local TextButton = Instance.new("TextButton")
 
--- Create Main Tab
-local MainTab = Window:CreateTab("Main Scripts", 4483362458)
+h.Name = "h"
+h.Parent = game.Players.LocalPlayer.PlayerGui
+h.ResetOnSpawn = false
 
--- Block Drop Button
-local BlockDropButton = MainTab:CreateButton({
-   Name = "Block Drop (1 click per round)",
-   Callback = function()
-      -- Block Drop Script
-      local plr = game:GetService("Players").LocalPlayer
-      local gui = plr:WaitForChild("PlayerGui"):WaitForChild("BlockDrop")
+Main.Name = "Main"
+Main.Parent = h
+Main.Active = true
+Main.Draggable = true
+Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Main.BorderSizePixel = 0
+Main.Position = UDim2.new(0.174545452, 0, 0.459574461, 0)
+Main.Size = UDim2.new(0, 454, 0, 218)
+Main.Image = "rbxassetid://2005276185"
 
-      -- Wait until the Drop GUI appears
-      local bottomMiddle
-      repeat task.wait() bottomMiddle = gui:FindFirstChild("Bottom Middle") until bottomMiddle and bottomMiddle:FindFirstChild("Buttons")
+Top.Name = "Top"
+Top.Parent = Main
+Top.BackgroundColor3 = Color3.fromRGB(57, 57, 57)
+Top.BorderSizePixel = 0
+Top.Size = UDim2.new(0, 454, 0, 44)
 
-      local dropOn = bottomMiddle.Buttons:WaitForChild("Drop_On")
-      local dropOff = bottomMiddle.Buttons:WaitForChild("Drop_Off")
-      local endScreen = gui:WaitForChild("End Game Template")
+Title.Name = "Title"
+Title.Parent = Top
+Title.BackgroundColor3 = Color3.fromRGB(49, 49, 49)
+Title.BorderSizePixel = 0
+Title.Position = UDim2.new(0, 0, 0.295454562, 0)
+Title.Size = UDim2.new(0, 454, 0, 30)
+Title.Font = Enum.Font.SourceSans
+Title.Text = "FE Yeet Gui (trollface edition)"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextScaled = true
+Title.TextSize = 14.000
+Title.TextWrapped = true
 
-      -- Fires all MouseButton1Click connections (your working method)
-      local function fireDrop()
-          for _, conn in ipairs(getconnections(dropOn.MouseButton1Click)) do
-              pcall(function()
-                  conn:Fire()
-              end)
-          end
-      end
+TextBox.Parent = Main
+TextBox.BackgroundColor3 = Color3.fromRGB(49, 49, 49)
+TextBox.BorderSizePixel = 0
+TextBox.Position = UDim2.new(0.0704845786, 0, 0.270642221, 0)
+TextBox.Size = UDim2.new(0, 388, 0, 62)
+TextBox.Font = Enum.Font.SourceSans
+TextBox.PlaceholderText = "Who do i destroy(can be shortened)"
+TextBox.Text = ""
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.TextScaled = true
+TextBox.TextSize = 14.000
+TextBox.TextWrapped = true
 
-      -- Smart detection functions from the GUI script
-      function getArena()
-          return plr.DataSave.DontSave.MostRecentArena.Value
-      end
+TextButton.Parent = Main
+TextButton.BackgroundColor3 = Color3.fromRGB(49, 49, 49)
+TextButton.BorderSizePixel = 0
+TextButton.Position = UDim2.new(0.10352423, 0, 0.596330225, 0)
+TextButton.Size = UDim2.new(0, 359, 0, 50)
+TextButton.Font = Enum.Font.SourceSans
+TextButton.Text = "Cheese em'"
+TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton.TextScaled = true
+TextButton.TextSize = 14.000
+TextButton.TextWrapped = true
 
-      function getTeam(arena)
-          if arena.ArenaTemplate.Red.Character.Nametag.Frame.Username.Front.Text:match(plr.Name) then
-              return "Red"
-          else
-              return "Blue"
-          end
-      end
-
-      -- Get game board for monitoring
-      local arena = getArena()
-      local team = getTeam(arena)
-      local board = arena.ArenaTemplate[team].Board
-
-      -- Track connections for cleanup
-      local connections = {}
-      local shouldDrop = false
-
-      -- Monitor board tiles for color changes
-      for _, tile in pairs(board:GetDescendants()) do
-          if tile:IsA("MeshPart") then
-              local con = tile:GetPropertyChangedSignal("Color"):Connect(function()
-                  local color = tile.Color
-                  if color == Color3.fromRGB(164, 164, 164) then
-                      if tile.Parent.Name == '1' and tile.Name == "3" then
-                          shouldDrop = true
-                      else
-                          if tile.Name == "3" and tile.Color == Color3.fromRGB(164, 164, 164) then
-                              shouldDrop = true
-                          end
-                      end
-                  end
-              end)
-              table.insert(connections, con)
-          end
-      end
-
-      -- Main loop - combines your reliable clicking with smart detection
-      task.spawn(function()
-          while true do
-              task.wait(0.1)
-              
-              -- Check if game ended
-              if endScreen.Visible then
-                  break
-              end
-              
-              -- Use smart detection to determine when to drop
-              if shouldDrop and dropOn.Visible then
-                  fireDrop()
-                  shouldDrop = false -- Reset flag
-                  task.wait(0.3) -- Brief cooldown
-              end
-          end
-      end)
-
-      -- Cleanup connections when game ends
-      task.spawn(function()
-          while task.wait() do
-              if endScreen.Visible then
-                  for _, con in pairs(connections) do
-                      con:Disconnect()
-                  end
-                  break
-              end
-          end
-      end)
-
-      print("Smart Block Drop Script loaded - No GUI version")
-      
-      -- Show notification
-      Rayfield:Notify({
-         Title = "Block Drop",
-         Content = "Done Ã°Å¸â€Â¥",
-         Duration = 3,
-         Image = 4483362458
-      })
-   end,
-})
-
--- Tic-Tac-Toe Button
-local TicTacToeButton = MainTab:CreateButton({
-   Name = "Tic-Tac-Toe (1 click ONLY)",
-   Callback = function()
-      -- Tic-Tac-Toe Script
-      local Players = game:GetService("Players")
-      local RunService = game:GetService("RunService")
-      local player = Players.LocalPlayer
-
-      getgenv().SmartTTT = {
-          enabled = true,
-          working = false,
-          team = nil,
-          symbol = nil,
-          oppSym = nil
-      }
-
-      local boardMap = {"13","23","33","12","22","32","11","21","31"}
-      local board = {}
-
-      local function safeCall(fn, ...)
-          local ok, res = pcall(fn, ...)
-          return ok and res or nil
-      end
-
-      local function detectTeam()
-          local gui = player.PlayerGui:FindFirstChild("TicTacToe")
-          if not gui then return end
-          local top = gui:FindFirstChild("Top Middle")
-          if top then
-              local info = top:FindFirstChild("RoundInfo")
-              if info then
-                  if info:FindFirstChild("TeamColorRed") and info.TeamColorRed.Visible then
-                      getgenv().SmartTTT.team = "Red"
-                      getgenv().SmartTTT.symbol = "Ã¢Â­â€¢"
-                      getgenv().SmartTTT.oppSym = "Ã°Å¸â€¡Â½"
-                      return
-                  elseif info:FindFirstChild("TeamColorBlue") and info.TeamColorBlue.Visible then
-                      getgenv().SmartTTT.team = "Blue"
-                      getgenv().SmartTTT.symbol = "Ã°Å¸â€¡Â½"
-                      getgenv().SmartTTT.oppSym = "Ã¢Â­â€¢"
-                      return
-                  end
-              end
-          end
-      end
-
-      local function readFromGUI()
-          local gui = player.PlayerGui:FindFirstChild("TicTacToe")
-          local bottom = gui and gui:FindFirstChild("Bottom Middle")
-          if not bottom then return false end
-
-          for i = 1, 9 do board[i] = 0 end
-          for i = 1, 9 do
-              local btn = bottom.Buttons:FindFirstChild("Drop_" .. i)
-              if btn then
-                  local full = btn:FindFirstChild("Full")
-                  local text = btn:FindFirstChild("TextLabel")
-                  if full and full.Visible and text then
-                      if text.Text == getgenv().SmartTTT.symbol then
-                          board[i] = 1
-                      elseif text.Text == getgenv().SmartTTT.oppSym then
-                          board[i] = -1
-                      end
-                  end
-              end
-          end
-          return true
-      end
-
-      local function readFromWorkspace()
-          local root = workspace:FindFirstChild("TicTacToe") or workspace
-          for i = 1, 9 do
-              board[i] = 0
-              local part = root:FindFirstChild(boardMap[i])
-              if part then
-                  local attr = safeCall(part.GetAttribute, part, "Full")
-                  if attr == "Red" then
-                      board[i] = (getgenv().SmartTTT.team == "Red") and 1 or -1
-                  elseif attr == "Blue" then
-                      board[i] = (getgenv().SmartTTT.team == "Blue") and 1 or -1
-                  end
-              end
-          end
-      end
-
-      local function readBoard()
-          if not getgenv().SmartTTT.symbol then detectTeam() end
-          if not readFromGUI() then
-              readFromWorkspace()
-          end
-      end
-
-      -- === Determine if AI went first ===
-      local function wentFirst()
-          local aiMoves = 0
-          local oppMoves = 0
-          
-          for i = 1, 9 do
-              if board[i] == 1 then aiMoves = aiMoves + 1 end
-              if board[i] == -1 then oppMoves = oppMoves + 1 end
-          end
-          
-          -- If AI has same or more moves, AI went first
-          return aiMoves >= oppMoves
-      end
-
-      -- === Pure Minimax Logic (for going second) ===
-
-      local function checkWin(gameBoard, mark)
-          local wins = {
-              {1,2,3}, {4,5,6}, {7,8,9}, -- rows
-              {1,4,7}, {2,5,8}, {3,6,9}, -- columns
-              {1,5,9}, {3,5,7}           -- diagonals
-          }
-          
-          for _, combo in ipairs(wins) do
-              if gameBoard[combo[1]] == mark and gameBoard[combo[2]] == mark and gameBoard[combo[3]] == mark then
-                  return true
-              end
-          end
-          return false
-      end
-
-      local function checkTie(gameBoard)
-          for i = 1, 9 do
-              if gameBoard[i] == 0 then
-                  return false
-              end
-          end
-          return true
-      end
-
-      local function minimax(gameBoard, isMaximizing)
-          if checkWin(gameBoard, 1) then return 1 end   -- AI wins
-          if checkWin(gameBoard, -1) then return -1 end -- Opponent wins
-          if checkTie(gameBoard) then return 0 end      -- Tie
-          
-          if isMaximizing then
-              local bestScore = -math.huge
-              for i = 1, 9 do
-                  if gameBoard[i] == 0 then
-                      gameBoard[i] = 1
-                      local score = minimax(gameBoard, false)
-                      gameBoard[i] = 0
-                      bestScore = math.max(bestScore, score)
-                  end
-              end
-              return bestScore
-          else
-              local bestScore = math.huge
-              for i = 1, 9 do
-                  if gameBoard[i] == 0 then
-                      gameBoard[i] = -1
-                      local score = minimax(gameBoard, true)
-                      gameBoard[i] = 0
-                      bestScore = math.min(bestScore, score)
-                  end
-              end
-              return bestScore
-          end
-      end
-
-      local function getMinimaxMove()
-          local bestScore = -math.huge
-          local bestMove = nil
-          
-          for i = 1, 9 do
-              if board[i] == 0 then
-                  board[i] = 1
-                  local score = minimax(board, false)
-                  board[i] = 0
-                  if score > bestScore then
-                      bestScore = score
-                      bestMove = i
-                  end
-              end
-          end
-          
-          return bestMove
-      end
-
-      -- === Safe Forking AI Logic (for going first) ===
-
-      local function checkWinner(gameBoard)
-          local winPatterns = {
-              {1,2,3}, {4,5,6}, {7,8,9},
-              {1,4,7}, {2,5,8}, {3,6,9},
-              {1,5,9}, {3,5,7}
-          }
-
-          for _, pattern in ipairs(winPatterns) do
-              local a, b, c = pattern[1], pattern[2], pattern[3]
-              if gameBoard[a] ~= 0 and gameBoard[a] == gameBoard[b] and gameBoard[b] == gameBoard[c] then
-                  return gameBoard[a] == 1 and "X" or "O"
-              end
-          end
-
-          for i = 1, 9 do
-              if gameBoard[i] == 0 then return nil end
-          end
-
-          return "Draw"
-      end
-
-      local function countWinningMoves(gameBoard, symbol)
-          local count = 0
-          for i = 1, 9 do
-              if gameBoard[i] == 0 then
-                  gameBoard[i] = symbol
-                  if checkWinner(gameBoard) == (symbol == 1 and "X" or "O") then
-                      count += 1
-                  end
-                  gameBoard[i] = 0
-              end
-          end
-          return count
-      end
-
-      local function findForkMove(gameBoard, symbol)
-          for i = 1, 9 do
-              if gameBoard[i] == 0 then
-                  gameBoard[i] = symbol
-                  local wins = countWinningMoves(gameBoard, symbol)
-                  gameBoard[i] = 0
-                  if wins >= 2 then
-                      return i
-                  end
-              end
-          end
-          return nil
-      end
-
-      local function minimaxSafeForking(gameBoard, isMaximizing)
-          local result = checkWinner(gameBoard)
-          if result == "X" then return 10 end
-          if result == "O" then return -10 end
-          if result == "Draw" then return 0 end
-
-          if isMaximizing then
-              local bestScore = -math.huge
-              for i = 1, 9 do
-                  if gameBoard[i] == 0 then
-                      gameBoard[i] = 1
-                      local score = minimaxSafeForking(gameBoard, false)
-                      gameBoard[i] = 0
-                      bestScore = math.max(score, bestScore)
-                  end
-              end
-              return bestScore
-          else
-              local bestScore = math.huge
-              for i = 1, 9 do
-                  if gameBoard[i] == 0 then
-                      gameBoard[i] = -1
-                      local score = minimaxSafeForking(gameBoard, true)
-                      gameBoard[i] = 0
-                      bestScore = math.min(score, bestScore)
-                  end
-              end
-              return bestScore
-          end
-      end
-
-      local function getSafeForkingMove()
-          -- Win now
-          for i = 1, 9 do
-              if board[i] == 0 then
-                  board[i] = 1
-                  if checkWinner(board) == "X" then
-                      board[i] = 0
-                      return i
-                  end
-                  board[i] = 0
-              end
-          end
-
-          -- Block enemy win
-          for i = 1, 9 do
-              if board[i] == 0 then
-                  board[i] = -1
-                  if checkWinner(board) == "O" then
-                      board[i] = 0
-                      return i
-                  end
-                  board[i] = 0
-              end
-          end
-
-          -- Create fork
-          local fork = findForkMove(board, 1)
-          if fork then return fork end
-
-          -- Block enemy fork
-          local blockFork = findForkMove(board, -1)
-          if blockFork then return blockFork end
-
-          -- Center
-          if board[5] == 0 then return 5 end
-
-          -- Opposite corner
-          local oppositeCorners = {
-              [1] = 9, [3] = 7, [7] = 3, [9] = 1
-          }
-          for k, v in pairs(oppositeCorners) do
-              if board[k] == -1 and board[v] == 0 then
-                  return v
-              end
-          end
-
-          -- Empty corner
-          local corners = {1, 3, 7, 9}
-          for _, i in ipairs(corners) do
-              if board[i] == 0 then return i end
-          end
-
-          -- Fallback: minimax
-          local bestScore = -math.huge
-          local bestMove = nil
-          for i = 1, 9 do
-              if board[i] == 0 then
-                  board[i] = 1
-                  local score = minimaxSafeForking(board, false)
-                  board[i] = 0
-                  if score > bestScore then
-                      bestScore = score
-                      bestMove = i
-                  end
-              end
-          end
-
-          return bestMove
-      end
-
-      -- === Main Move Logic ===
-
-      local function getBestMove()
-          if wentFirst() then
-              -- AI went first: use safe forking AI logic
-              return getSafeForkingMove()
-          else
-              -- AI went second: use pure minimax to not lose
-              return getMinimaxMove()
-          end
-      end
-
-      local function fireButton(button)
-          safeCall(function()
-              for _, c in pairs(getconnections(button.MouseButton1Click)) do
-                  c:Fire()
-              end
-          end)
-      end
-
-      local function playTurn()
-          if not getgenv().SmartTTT.enabled or getgenv().SmartTTT.working then return end
-          local gui = player.PlayerGui:FindFirstChild("TicTacToe")
-          local bottom = gui and gui:FindFirstChild("Bottom Middle")
-          if not (bottom and bottom.Visible) then return end
-
-          getgenv().SmartTTT.working = true
-          readBoard()
-          local move = getBestMove()
-          if move then
-              local btn = bottom.Buttons:FindFirstChild("Drop_" .. move)
-              if btn then
-                  task.delay(math.random(100, 200)/100, function()
-                      fireButton(btn)
-                  end)
-              end
-          end
-          task.delay(2.5, function()
-              getgenv().SmartTTT.working = false
-          end)
-      end
-
-      RunService.Heartbeat:Connect(function()
-          safeCall(function()
-              playTurn()
-          end)
-      end)
-
-      print("Ã¢Å“â€¦ Adaptive Tic-Tac-Toe AI Loaded (Safe Forking when first, Minimax when second)")
-      
-      -- Show notification
-      Rayfield:Notify({
-         Title = "Tic-Tac-Toe",
-         Content = "Done Ã°Å¸â€Â¥",
-         Duration = 3,
-         Image = 4483362458
-      })
-   end,
-})
-
--- Create Info Section
-MainTab:CreateSection("Script Info")
-
-MainTab:CreateParagraph({
-   Title = "How to Use",
-   Content = "Click the buttons above to activate the respective scripts. Block Drop works automatically during games, and Tic-Tac-Toe will play optimally for you."
-})
-
--- Show loading complete notification
-Rayfield:Notify({
-   Title = "Hub Loaded",
-   Content = "All scripts ready to use!",
-   Duration = 5,
-   Image = 4483362458
-})
+TextButton.MouseButton1Click:Connect(function()
+	local Target = gplr(TextBox.Text)
+	if Target[1] then
+		Target = Target[1]
+		
+		local Thrust = Instance.new('BodyThrust', lp.Character.HumanoidRootPart)
+		Thrust.Force = Vector3.new(9999,9999,9999)
+		Thrust.Name = "YeetForce"
+		repeat
+			lp.Character.HumanoidRootPart.CFrame = Target.Character.HumanoidRootPart.CFrame
+			Thrust.Location = Target.Character.HumanoidRootPart.Position
+			game:FindService("RunService").Heartbeat:wait()
+		until not Target.Character:FindFirstChild("Head")
+	else
+		warn("invalid player")
+	end
+end)
